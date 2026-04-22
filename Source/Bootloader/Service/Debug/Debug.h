@@ -7,8 +7,8 @@ extern "C" {
 
 #include <stdint.h>
 
-void Cli_Debug(const char *format, ...);
-void Cli_Debug_Hex(char *ptr, uint8_t len, ...);
+void Debug(const char *format, ...);
+void Debug_Hex(char *ptr, uint8_t len, ...);
 
 #ifdef __cplusplus
 }

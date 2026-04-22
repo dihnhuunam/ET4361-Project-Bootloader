@@ -44,12 +44,14 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Common/Debug.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Debug/Debug.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Led/Led.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Common
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Debug
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Led
 )
 
 # Add project symbols (macros)
