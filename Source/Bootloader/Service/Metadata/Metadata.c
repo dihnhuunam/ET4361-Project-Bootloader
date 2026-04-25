@@ -1,3 +1,7 @@
+/**
+ * @file Metadata.c
+ * @brief Implements metadata record management and slot state updates.
+ */
 #include "Metadata.h"
 
 #include "BootloaderConfig.h"
@@ -9,11 +13,23 @@
 #define METADATA_RECORD_ALIGNMENT 128U
 #define METADATA_RECORD_COUNT (METADATA_REGION_SIZE / METADATA_RECORD_ALIGNMENT)
 
+/**
+ * @brief Returns the flash address of a metadata record slot.
+ * @param index Metadata record index.
+ * @return
+ * Start address of the selected record.
+ */
 static uint32_t Metadata_GetRecordAddress(uint32_t index)
 {
     return METADATA_REGION_START + (index * METADATA_RECORD_ALIGNMENT);
 }
 
+/**
+ * @brief Recomputes and stores the CRC of a metadata object.
+ * @param metadata Metadata object to update.
+ *
+ * @return HAL status of the CRC calculation.
+ */
 static HAL_StatusTypeDef Metadata_UpdateCrc(BootMetadata_t *metadata)
 {
     if (metadata == 0)
@@ -26,6 +42,12 @@ static HAL_StatusTypeDef Metadata_UpdateCrc(BootMetadata_t *metadata)
                                  &metadata->metadata_crc);
 }
 
+/**
+ * @brief Checks whether a metadata record slot is fully erased.
+ * @param metadata Metadata record to inspect.
+ *
+ * @return true if all words are erased, otherwise false.
+ */
 static bool Metadata_IsErasedRecord(const BootMetadata_t *metadata)
 {
     const uint32_t *words;
@@ -48,6 +70,11 @@ static bool Metadata_IsErasedRecord(const BootMetadata_t *metadata)
     return true;
 }
 
+/**
+ * @brief Finds the next available metadata record slot for writing.
+ * @return Address of the next free record, or
+ * 0 when compaction is required.
+ */
 static uint32_t Metadata_GetNextWriteAddress(void)
 {
     BootMetadata_t record;
@@ -65,6 +92,13 @@ static uint32_t Metadata_GetNextWriteAddress(void)
     return 0U;
 }
 
+/**
+ * @brief Returns read-only metadata for a slot.
+ * @param metadata Boot metadata object.
+ * @param slot Target
+ * slot.
+ * @return Pointer to slot metadata, or null for invalid input.
+ */
 const SlotMetadata_t *Metadata_GetSlot(const BootMetadata_t *metadata, BootSlot_t slot)
 {
     if ((metadata == 0) || (slot < BOOT_SLOT_APP1) || (slot > BOOT_SLOT_APP2))
@@ -75,6 +109,13 @@ const SlotMetadata_t *Metadata_GetSlot(const BootMetadata_t *metadata, BootSlot_
     return &metadata->slots[(uint32_t)slot - 1U];
 }
 
+/**
+ * @brief Returns mutable metadata for a slot.
+ * @param metadata Boot metadata object.
+ * @param slot Target slot.
+
+ * * @return Pointer to mutable slot metadata, or null for invalid input.
+ */
 SlotMetadata_t *Metadata_GetSlotMutable(BootMetadata_t *metadata, BootSlot_t slot)
 {
     if ((metadata == 0) || (slot < BOOT_SLOT_APP1) || (slot > BOOT_SLOT_APP2))
@@ -85,6 +126,11 @@ SlotMetadata_t *Metadata_GetSlotMutable(BootMetadata_t *metadata, BootSlot_t slo
     return &metadata->slots[(uint32_t)slot - 1U];
 }
 
+/**
+ * @brief Initializes an in-memory metadata structure with default values.
+ * @param metadata Metadata object to
+ * initialize.
+ */
 void Metadata_InitDefault(BootMetadata_t *metadata)
 {
     if (metadata == 0)
@@ -104,6 +150,12 @@ void Metadata_InitDefault(BootMetadata_t *metadata)
     (void)Metadata_UpdateCrc(metadata);
 }
 
+/**
+ * @brief Checks whether a metadata record has a valid header and CRC.
+ * @param metadata Metadata record to
+ * validate.
+ * @return true if the metadata record is valid, otherwise false.
+ */
 bool Metadata_IsValid(const BootMetadata_t *metadata)
 {
     BootMetadata_t local_copy;
@@ -127,6 +179,13 @@ bool Metadata_IsValid(const BootMetadata_t *metadata)
     return local_copy.metadata_crc == metadata->metadata_crc;
 }
 
+/**
+ * @brief Loads the newest valid metadata record from flash.
+ * @param metadata Output metadata object.
+ * @param
+ * found_out Output flag indicating whether a valid record was found.
+ * @return HAL status of the load operation.
+ */
 HAL_StatusTypeDef Metadata_LoadLatest(BootMetadata_t *metadata, bool *found_out)
 {
     BootMetadata_t candidate;
@@ -168,6 +227,12 @@ HAL_StatusTypeDef Metadata_LoadLatest(BootMetadata_t *metadata, bool *found_out)
     return HAL_OK;
 }
 
+/**
+ * @brief Saves a new metadata record instance into flash.
+ * @param metadata Metadata object to store.
+ * @return
+ * HAL status of the save operation.
+ */
 HAL_StatusTypeDef Metadata_Save(BootMetadata_t *metadata)
 {
     HAL_StatusTypeDef status;
@@ -199,6 +264,12 @@ HAL_StatusTypeDef Metadata_Save(BootMetadata_t *metadata)
     return Flash_Write(write_address, (const uint8_t *)metadata, sizeof(*metadata));
 }
 
+/**
+ * @brief Sets or clears the request flag for bootloader OTA mode.
+ * @param enable true to request OTA mode, false
+ * to clear the request.
+ * @return HAL status of the metadata update.
+ */
 HAL_StatusTypeDef Metadata_RequestOtaMode(bool enable)
 {
     BootMetadata_t metadata;
@@ -220,6 +291,16 @@ HAL_StatusTypeDef Metadata_RequestOtaMode(bool enable)
     return Metadata_Save(&metadata);
 }
 
+/**
+ * @brief Marks a slot as pending after a successful image update.
+ * @param slot Updated slot.
+ * @param image_size
+ * Image size in bytes.
+ * @param image_crc CRC of the programmed image.
+ * @param version Firmware version stored in
+ * metadata.
+ * @return HAL status of the metadata update.
+ */
 HAL_StatusTypeDef Metadata_MarkPending(BootSlot_t slot, uint32_t image_size, uint32_t image_crc, uint32_t version)
 {
     BootMetadata_t metadata;
@@ -254,6 +335,12 @@ HAL_StatusTypeDef Metadata_MarkPending(BootSlot_t slot, uint32_t image_size, uin
     return Metadata_Save(&metadata);
 }
 
+/**
+ * @brief Confirms a slot after the new firmware has booted successfully.
+ * @param slot Slot to confirm.
+ * @return
+ * HAL status of the metadata update.
+ */
 HAL_StatusTypeDef Metadata_ConfirmSlot(BootSlot_t slot)
 {
     BootMetadata_t metadata;
@@ -294,6 +381,12 @@ HAL_StatusTypeDef Metadata_ConfirmSlot(BootSlot_t slot)
     return Metadata_Save(&metadata);
 }
 
+/**
+ * @brief Invalidates a slot so it is no longer considered bootable.
+ * @param slot Slot to invalidate.
+ * @return
+ * HAL status of the metadata update.
+ */
 HAL_StatusTypeDef Metadata_InvalidateSlot(BootSlot_t slot)
 {
     BootMetadata_t metadata;

@@ -1,3 +1,7 @@
+/**
+ * @file BootloaderConfig.c
+ * @brief Implements bootloader memory-map helper functions.
+ */
 #include "BootloaderConfig.h"
 
 static const BootSlotRegion_t k_slot_regions[] = {

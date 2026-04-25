@@ -1,3 +1,7 @@
+/**
+ * @file Bootloader.c
+ * @brief Implements slot validation, recovery mode, and application handoff.
+ */
 #include "Bootloader.h"
 
 #include "BootloaderConfig.h"
@@ -187,6 +191,11 @@ static void Bootloader_RunRecoveryMode(BootMetadata_t *metadata)
     }
 }
 
+/**
+ * @brief Enters safe mode and switches into UART recovery handling.
+ * @param reason Human-readable reason reported through the debug UART.
+ * @return This function does not return under normal operation.
+ */
 static void Bootloader_EnterSafeMode(const char *reason)
 {
     Debug("Bootloader safe mode: %s\r\n", reason);
@@ -209,6 +218,15 @@ static void Bootloader_EnterSafeMode(const char *reason)
     }
 }
 
+/**
+ * @brief Selects a bootable slot only when the slot state matches the expected values.
+ * @param metadata Current boot metadata.
+ * @param slot Candidate slot to validate.
+ * @param state_a First accepted slot state.
+ * @param state_b Second accepted slot state.
+ * @param result_out Optional output validation details.
+ * @return true if the slot state and image are valid, otherwise false.
+ */
 static bool Bootloader_IsSlotBootableWithStates(const BootMetadata_t *metadata, BootSlot_t slot, uint32_t state_a,
                                                 uint32_t state_b, ImageValidationResult_t *result_out)
 {
@@ -230,6 +248,11 @@ static bool Bootloader_IsSlotBootableWithStates(const BootMetadata_t *metadata, 
     return Image_Validate(slot, slot_metadata->image_size, slot_metadata->image_crc, result_out);
 }
 
+/**
+ * @brief Chooses the best confirmed fallback slot for normal boot.
+ * @param metadata Current boot metadata.
+ * @return Selected confirmed slot, or BOOT_SLOT_NONE if no slot is bootable.
+ */
 static BootSlot_t Bootloader_SelectConfirmedSlot(const BootMetadata_t *metadata)
 {
     ImageValidationResult_t validation;
@@ -274,6 +297,11 @@ static BootSlot_t Bootloader_SelectConfirmedSlot(const BootMetadata_t *metadata)
     return BOOT_SLOT_NONE;
 }
 
+/**
+ * @brief Transfers execution to the selected application slot.
+ * @param slot Application slot to boot.
+ * @return This function does not return under normal operation.
+ */
 static void Bootloader_JumpToSlot(BootSlot_t slot)
 {
     const BootSlotRegion_t *region;
@@ -306,6 +334,12 @@ static void Bootloader_JumpToSlot(BootSlot_t slot)
     Bootloader_EnterSafeMode("application returned");
 }
 
+/**
+ * @brief Processes a pending image before normal confirmed-slot selection.
+ * @param metadata Current boot metadata.
+ * @param slot_out Output selected pending slot.
+ * @return true if a pending slot should be booted, otherwise false.
+ */
 static bool Bootloader_HandlePending(BootMetadata_t *metadata, BootSlot_t *slot_out)
 {
     BootSlot_t pending_slot;
@@ -352,6 +386,9 @@ static bool Bootloader_HandlePending(BootMetadata_t *metadata, BootSlot_t *slot_
     return true;
 }
 
+/**
+ * @brief Runs the top-level bootloader flow after hardware initialization.
+ */
 void Bootloader_Run(void)
 {
     BootMetadata_t metadata;

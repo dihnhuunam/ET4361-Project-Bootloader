@@ -1,3 +1,7 @@
+/**
+ * @file BootloaderConfig.h
+ * @brief Bootloader memory map, slot definitions, and range helpers.
+ */
 #ifndef BOOTLOADER_CONFIG_H
 #define BOOTLOADER_CONFIG_H
 
@@ -42,6 +46,7 @@ extern "C"
 #define METADATA_FORMAT_VERSION 1UL
 #define METADATA_MAX_BOOT_ATTEMPTS 3UL
 
+    /** @brief Identifies the available application slots. */
     typedef enum
     {
         BOOT_SLOT_NONE = 0U,
@@ -49,6 +54,7 @@ extern "C"
         BOOT_SLOT_APP2 = 2U
     } BootSlot_t;
 
+    /** @brief Describes the runtime state of an application slot. */
     typedef enum
     {
         SLOT_STATE_EMPTY = 0U,
@@ -58,16 +64,49 @@ extern "C"
         SLOT_STATE_INVALID = 4U
     } BootSlotState_t;
 
+    /** @brief Defines the flash address range assigned to a boot slot. */
     typedef struct
     {
         uint32_t start_address;
         uint32_t size;
     } BootSlotRegion_t;
 
+    /**
+     * @brief Returns the flash region assigned to a slot.
+     * @param slot Target boot slot.
+     * @return Pointer to the slot region description, or null on invalid slot.
+     */
     const BootSlotRegion_t *BootConfig_GetSlotRegion(BootSlot_t slot);
+
+    /**
+     * @brief Returns the opposite application slot.
+     * @param slot Source boot slot.
+     * @return The opposite application slot, or BOOT_SLOT_NONE for invalid input.
+     */
     BootSlot_t BootConfig_GetOtherSlot(BootSlot_t slot);
+
+    /**
+     * @brief Checks whether a flash range is inside the device flash map.
+     * @param address Start address of the range.
+     * @param length Range length in bytes.
+     * @return true if the full range is inside device flash, otherwise false.
+     */
     bool BootConfig_IsFlashRangeValid(uint32_t address, uint32_t length);
+
+    /**
+     * @brief Checks whether a range stays inside the specified application slot.
+     * @param slot Target application slot.
+     * @param address Start address of the range.
+     * @param length Range length in bytes.
+     * @return true if the full range is inside the selected slot, otherwise false.
+     */
     bool BootConfig_IsAppRangeValid(BootSlot_t slot, uint32_t address, uint32_t length);
+
+    /**
+     * @brief Checks whether an address is inside the configured SRAM window.
+     * @param address Address to validate.
+     * @return true if the address is inside the configured SRAM range, otherwise false.
+     */
     bool BootConfig_IsRamAddressValid(uint32_t address);
 
 #ifdef __cplusplus

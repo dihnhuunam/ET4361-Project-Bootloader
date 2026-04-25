@@ -1,3 +1,7 @@
+/**
+ * @file App.h
+ * @brief Application service entry point for the bootloader firmware.
+ */
 #ifndef APP_SERVICE_H
 #define APP_SERVICE_H
 
@@ -6,6 +10,9 @@ extern "C"
 {
 #endif
 
+    /**
+     * @brief Runs the service-level bootloader startup flow.
+     */
     void App_Run(void);
 
 #ifdef __cplusplus

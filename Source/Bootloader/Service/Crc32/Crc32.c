@@ -1,7 +1,20 @@
+/**
+ * @file Crc32.c
+ * @brief Implements buffer and flash CRC32 calculation helpers.
+ */
 #include "Crc32.h"
 
 #include "crc.h"
 
+/**
+ * @brief Accumulates CRC32 over a byte stream using the hardware CRC peripheral.
+ * @param data Input buffer.
+ *
+ * @param length Buffer length in bytes.
+ * @param crc_out Output CRC value.
+ * @return HAL_OK on success, otherwise
+ * HAL_ERROR.
+ */
 static HAL_StatusTypeDef Crc32_AccumulateBytes(const uint8_t *data, uint32_t length, uint32_t *crc_out)
 {
     uint32_t words[8];
@@ -49,6 +62,14 @@ static HAL_StatusTypeDef Crc32_AccumulateBytes(const uint8_t *data, uint32_t len
     return HAL_OK;
 }
 
+/**
+ * @brief Calculates a CRC32 over a memory buffer.
+ * @param data Input buffer.
+ * @param length Buffer length in
+ * bytes.
+ * @param crc_out Output CRC value.
+ * @return HAL_OK on success, otherwise HAL_ERROR.
+ */
 HAL_StatusTypeDef Crc32_CalculateBuffer(const uint8_t *data, uint32_t length, uint32_t *crc_out)
 {
     if ((data == 0) || (length == 0U) || (crc_out == 0))
@@ -59,6 +80,15 @@ HAL_StatusTypeDef Crc32_CalculateBuffer(const uint8_t *data, uint32_t length, ui
     return Crc32_AccumulateBytes(data, length, crc_out);
 }
 
+/**
+ * @brief Calculates a CRC32 over a flash region.
+ * @param address Start address of the flash region.
+ * @param
+ * length Region length in bytes.
+ * @param crc_out Output CRC value.
+ * @return HAL_OK on success, otherwise
+ * HAL_ERROR.
+ */
 HAL_StatusTypeDef Crc32_CalculateFlash(uint32_t address, uint32_t length, uint32_t *crc_out)
 {
     return Crc32_CalculateBuffer((const uint8_t *)address, length, crc_out);

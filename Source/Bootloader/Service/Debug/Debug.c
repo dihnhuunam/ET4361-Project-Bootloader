@@ -1,3 +1,7 @@
+/**
+ * @file Debug.c
+ * @brief Implements UART-based debug output helpers.
+ */
 #include "Debug.h"
 #include "usart.h"
 #include <stdarg.h>
@@ -6,6 +10,12 @@
 
 #define CLI_DEBUG_BUFFER_SIZE 256U
 
+/**
+ * @brief Sends a raw debug message through UART.
+ * @param message Message buffer.
+ * @param length Message length
+ * in bytes.
+ */
 static void Cli_Debug_Send(const char *message, uint16_t length)
 {
     if ((message == NULL) || (length == 0U))
@@ -16,6 +26,12 @@ static void Cli_Debug_Send(const char *message, uint16_t length)
     HAL_UART_Transmit(&huart1, (uint8_t *)message, length, HAL_MAX_DELAY);
 }
 
+/**
+ * @brief Prints a formatted debug message through UART.
+ * @param format printf-style format string.
+ * @param ...
+ * Format arguments.
+ */
 void Debug(const char *format, ...)
 {
     va_list args;
@@ -44,6 +60,13 @@ void Debug(const char *format, ...)
     Cli_Debug_Send(buffer, (uint16_t)written);
 }
 
+/**
+ * @brief Prints a byte buffer as hexadecimal values with an optional prefix.
+ * @param ptr Input byte buffer.
+ *
+ * @param len Number of bytes to print.
+ * @param ... Optional printf-style prefix format followed by its arguments.
+ */
 void Debug_Hex(char *ptr, uint8_t len, ...)
 {
     va_list args;
