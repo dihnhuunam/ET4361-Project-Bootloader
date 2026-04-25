@@ -44,14 +44,27 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/App/App.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Bootloader/Bootloader.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Bootloader/BootloaderConfig.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Crc32/Crc32.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Service/Debug/Debug.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Flash/Flash.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Image/Image.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Service/Led/Led.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Metadata/Metadata.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/App
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Bootloader
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Crc32
     ${CMAKE_CURRENT_SOURCE_DIR}/Service/Debug
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Flash
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Image
     ${CMAKE_CURRENT_SOURCE_DIR}/Service/Led
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/Metadata
 )
 
 # Add project symbols (macros)
